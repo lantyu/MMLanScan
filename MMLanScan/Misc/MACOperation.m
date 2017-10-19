@@ -8,12 +8,12 @@
 #import "MACOperation.h"
 #import "LANProperties.h"
 #import "MacFinder.h"
-#import "Device.h"
+#import "MMDevice.h"
 
 @interface MACOperation ()
 @property (nonatomic,strong) NSString *ipStr;
-@property (nonatomic, copy) void (^result)(NSError  * _Nullable error, NSString  * _Nonnull ip,Device * _Nonnull device);
-@property(nonatomic,strong)Device *device;
+@property (nonatomic, copy) void (^result)(NSError  * _Nullable error, NSString  * _Nonnull ip,MMDevice * _Nonnull device);
+@property(nonatomic,strong)MMDevice *device;
 @property(nonatomic,weak)NSDictionary *brandDictionary;
 @end
 
@@ -26,20 +26,18 @@
     NSError *errorMessage;
 }
 
--(instancetype)initWithIPToRetrieveMAC:(NSString*)ip andBrandDictionary:(NSDictionary*)brandDictionary andCompletionHandler:(nullable void (^)(NSError  * _Nullable error, NSString  * _Nonnull ip,Device * _Nonnull device))result;{
+-(instancetype)initWithIPToRetrieveMAC:(NSString*)ip andBrandDictionary:(NSDictionary*)brandDictionary andCompletionHandler:(nullable void (^)(NSError  * _Nullable error, NSString  * _Nonnull ip,MMDevice * _Nonnull device))result;{
 
     self = [super init];
     
     if (self) {
-        
-        self.device = [[Device alloc]init];
-        self.name = ip;
-        self.ipStr= ip;
-        self.result = result;
-        self.brandDictionary=brandDictionary;
+        _device = [[MMDevice alloc]init];
+         self.name = ip;
+        _ipStr= ip;
+        _result = result;
+        _brandDictionary=brandDictionary;
         _isExecuting = NO;
         _isFinished = NO;
-
     }
     
     return self;
@@ -53,7 +51,6 @@
         [self didChangeValueForKey:@"isFinished"];
         return;
     }
-    
     
     [self willChangeValueForKey:@"isExecuting"];
     _isExecuting = YES;
@@ -102,9 +99,8 @@
     self.device.ipAddress=self.ipStr;
     self.device.macAddress =[[MacFinder ip2mac:self.device.ipAddress] uppercaseString];
     self.device.hostname = [LANProperties getHostFromIPAddress:self.ipStr];
-    
+
     if (!self.device.macAddress) {
- 
         errorMessage = [NSError errorWithDomain:@"MAC Address Not Exist" code:10 userInfo:nil];
     }
     else {
